@@ -24,6 +24,6 @@ public class Day03Test {
     @Test
     public void part2() {
         Day<Integer> day = new Day03();
-        assertEquals(null, day.part2(input.getLines()));
+        assertEquals(Integer.valueOf(70), day.part2(input.getLines()));
     }
 }
