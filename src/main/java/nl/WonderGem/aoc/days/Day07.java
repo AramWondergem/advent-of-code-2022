@@ -7,16 +7,12 @@ import java.util.function.Predicate;
 
 public class Day07 implements Day<Integer> {
 
+    public Map<String, Integer> makeListWithSize (List<String> input){
+        input.removeIf(listItem -> (listItem.equals("$ cd .."))); // remove all instructions for switching dirs
 
-    @Override
-    public Integer part1(List<String> input) {
-
-        input.removeIf(listItem -> (listItem.equals("$ cd ..")));
-        List<String> directoryNames = new ArrayList<>();
-
-
-
-
+        //some directories have the same name, which I had to rename. My code excepts unique names.
+        // Below is code to collect the locations and names of those directories in the list
+        // and to collect the instructions to change to the dir with locations in the list
 
         HashMap<Integer, String> jrhp = new HashMap<>();
         HashMap<Integer, String> zgqjbf = new HashMap<>();
@@ -52,32 +48,35 @@ public class Day07 implements Day<Integer> {
         listOfUitzonderingen.add(mfmps);
         listOfUitzonderingen.add(vzgpfd);
 
+        // Below the dirs with matching names are renamed.
+
         for (HashMap<Integer, String> uitzondering :
                 listOfUitzonderingen) {
 
 
+            // sorting the names of the dir on location
             TreeMap<Integer, String> sorted = new TreeMap<>();
-
-            // Copy all data from hashMap into TreeMap
             sorted.putAll(uitzondering);
 
-            int counter = 0;
-            while (!sorted.isEmpty()) {
-//                System.out.println(sorted);
-                List<Integer> removeEntries = new ArrayList<>();
+            int counter = 0; // counter to get an unique tag for the names
+
+            while (!sorted.isEmpty()) { // the loop looks for dir [name] directly followed by $ cd [name]. They belong together. The names are renamed by adding a unique tag. Then they are removed from the list with uitzonderingen.
+
+                List<Integer> removeEntries = new ArrayList<>(); // collect the keys/location in the inputlist of names that are changed
 
 
+                // to map the TreeMap
                 Set<Map.Entry<Integer, String>> entries = sorted.entrySet();
-
                 Iterator<Map.Entry<Integer, String>> iterator = entries.iterator();
+
                 Map.Entry<Integer, String> firstEntry = sorted.firstEntry();
+
                 while (iterator.hasNext()) {
 
                     Map.Entry<Integer, String> secondEntry = iterator.next();
 
-
                     if (firstEntry.getValue().contains("dir") && secondEntry.getValue().contains("cd")) {
-//                        System.out.println("boe");
+
                         removeEntries.add(firstEntry.getKey());
                         removeEntries.add(secondEntry.getKey());
                         input.set(firstEntry.getKey(), input.get(firstEntry.getKey()) + counter);
@@ -89,36 +88,19 @@ public class Day07 implements Day<Integer> {
 
                 }
 
+                // remove the changed names
+
                 for (Integer i :
                         removeEntries) {
-//                    System.out.println("boe");
                     sorted.remove((i));
                 }
-
-//            // Display the TreeMap which is naturally sorted
-//            for (Map.Entry<Integer, String> entry : sorted.entrySet()) {
-//                System.out.println("Key = " + entry.getKey() +
-//                        ", Value = " + entry.getValue());
-//
-//            }
             }
         }
 
 
-//        for (String s :
-//                input) {
-//            System.out.println(input.indexOf(s) + s);
-//        }
-//        System.out.println(input.size());
+        // finding all the unique directoryNames
 
-//        for (int i = 0; i < input.size(); i++) {
-//            input.set(i, input.get(i) + i);
-//        }
-
-
-//        System.out.println(input);
-
-//        // find the number of directories --> setmap with dir
+        List<String> directoryNames = new ArrayList<>();
 
         for (String commandLine :
                 input) {
@@ -129,29 +111,16 @@ public class Day07 implements Day<Integer> {
         }
 
 
-        Set<String> uniqueDirectoryNames = new HashSet<>();
-//        Set<String> nameUsedMultiple = new HashSet<>();
-//
-//        for (String name :
-//                directoryNames) {
-//
-//            if (!uniqueDirectoryNames.add(name)) {
-//                nameUsedMultiple.add(name);
-//            }
-//
-//        }
-//        System.out.println(nameUsedMultiple);
 
-
-
-        int numberOfDir = directoryNames.size();
-        System.out.println(numberOfDir);
-
-        // get a HashMap with all directories
+        // get a HashMap with all directories names and what is in the directory
         Map<String, List<String>> directories = new HashMap<>();
+        // The names of the directories and where they are located in the original list
         HashMap<String, Integer> directoryLocations = new HashMap<>();
+        // A hashmap to save the original order of the above Hashmap
         HashMap<Integer, String> rowOfDirectoylocations = new HashMap<>();
         int counter = 0;
+
+        // fill the above hashmaps
 
         for (int i = 0; i < input.size(); i++) {
             if (input.get(i).contains("$ cd") && input.get(i + 1).contains("$ ls")) {
@@ -161,9 +130,9 @@ public class Day07 implements Day<Integer> {
             }
         }
 
-//        System.out.println(directoryLocations);
-//        System.out.println(rowOfDirectoylocations);
 
+
+        // filling the directories list with the name of directory and the directory
 
         for (int i = 0; i < (rowOfDirectoylocations.size() - 1); i++) {
 
@@ -177,7 +146,7 @@ public class Day07 implements Day<Integer> {
             List<String> directory = input.subList(startOfDirectory, endOfDirectory);
 
             directories.put(nameOfDirectory, directory);
-//            System.out.println(directories);
+
         }
         //adding the last directory
         int startOfDirectory = directoryLocations.get(rowOfDirectoylocations.get(rowOfDirectoylocations.size() - 1)) + 2;
@@ -190,58 +159,51 @@ public class Day07 implements Day<Integer> {
 
         directories.put(nameOfDirectory, directory);
 
-//        System.out.println(directories);
 
 
-        // find all directories with no directories in it
+        // loop in which the directories list is mapped. The first round is looks for directories without other directories
+        // and calculates the size. Then in all the other loops, it looks for directories with directories in it of which the size is know. Then it calculates the size of that directory.
 
         Map<String, Integer> directorySizeList = new HashMap<>();
-        int answer = 0;
+
         String nameOfDIrectory2 = "";
 
         while (directoryNames.size()>1) {
-
-            for (String n:
-                 directoryNames){
-
-//                System.out.println(n);
-
-            }
-
 
 
             for (Map.Entry<String, List<String>> mapElement :
                     directories.entrySet()) {
 
                 List<String> placeholderDirectory = mapElement.getValue();
-//            System.out.println(placeholderDirectory);
                 String nameDirectory = mapElement.getKey();
 
-                boolean doesNotContainNotKnowDirectory = true;
+                boolean doesNotContainANotKnowDirectory = true;
+
+                // checks if directoryNames contains the names of directories in the directory. The directoryNames is the list with directories without the size of the directory.
                 for (String name :
                         placeholderDirectory) {
-//                System.out.println(directoryNames);
+
                     boolean containsName = directoryNames.contains(name);
                     if (containsName) {
-//                    System.out.println("false");
-                        doesNotContainNotKnowDirectory = false;
+
+                        doesNotContainANotKnowDirectory = false;
                         break;
                     }
 
                 }
 
-                if (doesNotContainNotKnowDirectory) {
+                // if all the sizes of the files and directories are known in the directory, then the size is calculated and saved.
+
+                if (doesNotContainANotKnowDirectory) {
                     int sumOfValuesDirectory = 0;
 
-//                    System.out.println(nameDirectory);
-//                    System.out.println(directoryNames.contains("866"));
 
-                    directoryNames.remove(nameDirectory);
+
+                    directoryNames.remove(nameDirectory); // The size of the directory is now known and must be removed from the unknownList
                     nameOfDIrectory2 = nameDirectory;
 
                     for (String e :
                             placeholderDirectory) {
-                        boolean replaced = false;
                         if (e.contains("dir")) {
                             Integer valueOfDirectory = directorySizeList.get(e);
                             sumOfValuesDirectory += valueOfDirectory;
@@ -260,8 +222,23 @@ public class Day07 implements Day<Integer> {
 
 
             }
+            // The directory is removed from directories to prevent that it will be calculated in the next round.
             directories.remove(nameOfDIrectory2);
         }
+
+        return directorySizeList;
+
+    }
+
+
+    @Override
+    public Integer part1(List<String> input) {
+
+        Map<String,Integer> directorySizeList = makeListWithSize(input);//returns all directories with their size
+
+        int answer = 0;
+
+        // map through the list and add all dir with sizes below 10.0001
         for (Map.Entry<String, Integer> listItem :
                 directorySizeList.entrySet()) {
 
@@ -270,21 +247,64 @@ public class Day07 implements Day<Integer> {
             }
 
         }
-//
-//
-//        // sum of all files
-//        // save in a hashset file
-//        // look for dir that only has the directories in the hashset
-//        // sum of all files and dir
-//        //save in the hashset file
-//        // go on untill you have found all dir --> list has same size as setmap
-//        // iterate hashsetfile --> count the dir lower than 10.000
 
         return answer;
     }
 
     @Override
     public Integer part2(List<String> input) {
-        return null;
+
+        Map<String,Integer> directorySizeList = makeListWithSize(input); //returns all directories with their size
+
+// The list does not include the main folder. The main folder contains the following dir and one file
+// 246027 gldg.jrd
+//dir qffvbf
+//dir qjjgh
+//dir vpjqpqfm
+
+        int total = 246027;
+
+
+        for (Map.Entry<String, Integer> listItem :
+                directorySizeList.entrySet()) {
+
+            if (listItem.getKey().equals("dir qffvbf")) {
+                total += listItem.getValue();
+            }
+
+            if (listItem.getKey().equals("dir qjjgh")) {
+                total += listItem.getValue();
+            }
+
+            if (listItem.getKey().equals("dir vpjqpqfm")) {
+                total += listItem.getValue();
+            }
+
+
+
+        }
+
+
+        // Calculations how much space should be freed up.
+
+        int spaceToFreeUp = 30000000 - (70000000 - total);
+
+        // make a list of candidate dir that are large enough to be deleted
+
+        List<Integer> candidatesToBeDeleted = new ArrayList<>();
+
+        for (Map.Entry<String, Integer> listItem :
+                directorySizeList.entrySet()) {
+
+            if(listItem.getValue() > spaceToFreeUp) {
+                candidatesToBeDeleted.add(listItem.getValue());
+            }
+
+        }
+
+        Collections.sort(candidatesToBeDeleted);
+
+
+        return candidatesToBeDeleted.get(0);
     }
 }
