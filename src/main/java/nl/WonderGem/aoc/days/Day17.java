@@ -1,61 +1,98 @@
 package nl.WonderGem.aoc.days;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import nl.WonderGem.aoc.common.Day;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 
 
 public class Day17 implements Day<Integer> {
 
     public class Row {
-        @Getter @Setter
+        @Getter
+        @Setter
         private int y;
 
-        @Getter @Setter
+        @Getter
+        @Setter
         List<Character> fieldRow;
 
-        public Row (int y) {
+        public Row(int y) {
             this.y = y;
             this.fieldRow = new ArrayList<>();
-            fieldRow.add('X');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('.');
-            fieldRow.add('X');
+                fieldRow.add('X');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('.');
+                fieldRow.add('X');
+
+
         }
 
-        public void setFields(Map<Integer,Character> coordinatesStone){
+        public void constructStartRow(){
+            for (int i = 0; i < fieldRow.size(); i++) {
 
-
-            for (Map.Entry<Integer, Character> listItem : coordinatesStone.entrySet()
-            ) {
-
-                if (fieldRow.get(listItem.getKey()) != 'X') {
-
-                    fieldRow.set(listItem.getKey(), listItem.getValue());
-                } else {
-                    System.out.println("The field is already taken! fieldNumber: " + listItem.getKey() + " rowNumber:" + y);
+                if(fieldRow.get(i) != 'X') {
+                    fieldRow.set(i, 'X');
                 }
 
             }
-
         }
 
-    }
-    
-    public List<Character> windDirectionGenerator(String windDirections) {
+        public void setFields(List<StoneCoordinate>coordinates) {
+            for (StoneCoordinate cor :
+                    coordinates) {
+                if(cor.getY() == y) {
+                    fieldRow.set(cor.getX(), 'X');
+                }
 
-        List<Character> windDirectionList = new ArrayList<>();
+            }
+        }
+
+        public boolean checkFieldRight(StoneCoordinate cor) {
+            if(fieldRow.get(cor.getX()+1) != 'X') {
+                return true;
+            } else
+                return false;
+        }
+
+        public boolean checkFieldLeft(StoneCoordinate cor) {
+            if(fieldRow.get(cor.getX()-1) != 'X') {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        public boolean checkFieldBelow(StoneCoordinate cor) {
+            if(fieldRow.get(cor.getX()) != 'X' && cor.getY() - 1 == y) {
+                return true;
+            } else if(!(cor.getY() - 1 == y)){
+                System.out.print("the wrong row is checked");
+                return false;
+            } else {
+                return false;
+            }
+        }
+
+        public void printRow() {
+            for (Character x :
+                    fieldRow) {
+                System.out.print(x);
+            }
+            System.out.println();
+        }
+    }
+
+    public Queue<Character> windDirectionGenerator(String windDirections) {
+
+        Queue<Character> windDirectionList = new LinkedList<>();
 
         for (int i = 0; i < windDirections.length(); i++) {
 
@@ -63,78 +100,119 @@ public class Day17 implements Day<Integer> {
         }
 
         return windDirectionList;
-        
+
     }
 
-    public abstract class Stone {
-        private Map<Integer,Row> stoneRows;
+    public class StoneCoordinate {
 
-        public Stone (int stoneNumber, int y) {
+        private int x;
+        private int y;
+
+        private StoneCoordinate(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public int getX() {
+            return x;
+        }
+
+        public void setX(int x) {
+            this.x = x;
+        }
+
+        public int getY() {
+            return y;
+        }
+
+        public void setY(int y) {
+            this.y = y;
+        }
+
+        public void goRight() {
+            x++;
+        }
+
+        public void goLeft(){
+            x--;
+        }
+
+        public void goDown(){
+            y--;
+        }
+    }
+
+
+    public class Stone {
+        private List<StoneCoordinate> stoneCoordinates = new ArrayList<>();
+
+        public Stone(int stoneNumber, int y) {
 
             switch (stoneNumber) {
                 case 1:
-                    setRowsforStone(1,y);
-                    Map<Integer, Character> row1 = new HashMap<>();
-                    row1.put(3,'X');
-                    row1.put(4,'X');
-                    row1.put(5,'X');
-                    row1.put(6,'X');
-                    stoneRows.get(y).setFields(row1);
+                    stoneCoordinates.add(new StoneCoordinate(3, y));
+                    stoneCoordinates.add(new StoneCoordinate(4, y));
+                    stoneCoordinates.add(new StoneCoordinate(5, y));
+                    stoneCoordinates.add(new StoneCoordinate(6, y));
                     break;
                 case 2:
-                    setRowsforStone(3,y);
-                    Map<Integer, Character> row1 = new HashMap<>();
-                    row1.put(3,'X');
-                    row1.put(4,'X');
-                    row1.put(5,'X');
-                    row1.put(6,'X');
-                    stoneRows.get(y).setFields(row1);
+                    stoneCoordinates.add(new StoneCoordinate(4, y));
+                    stoneCoordinates.add(new StoneCoordinate(3, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(4, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(5, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(4, y + 2));
                     break;
-// zet plekken waar de stenen moeten komen
-
-
+                case 3:
+                    stoneCoordinates.add(new StoneCoordinate(3, y));
+                    stoneCoordinates.add(new StoneCoordinate(4, y));
+                    stoneCoordinates.add(new StoneCoordinate(5, y));
+                    stoneCoordinates.add(new StoneCoordinate(5, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(5, y + 2));
+                    break;
+                case 4:
+                    stoneCoordinates.add(new StoneCoordinate(3, y));
+                    stoneCoordinates.add(new StoneCoordinate(3, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(3, y + 2));
+                    stoneCoordinates.add(new StoneCoordinate(3, y + 3));
+                    break;
+                case 5:
+                    stoneCoordinates.add(new StoneCoordinate(3, y));
+                    stoneCoordinates.add(new StoneCoordinate(4, y));
+                    stoneCoordinates.add(new StoneCoordinate(3, y + 1));
+                    stoneCoordinates.add(new StoneCoordinate(4, y + 1));
+                    break;
             }
 
         }
 
-        public void setRowsforStone(int numberOfRows, int y) {
-
-            for (int i = 0; i < numberOfRows; i++) {
-                Row stoneRow = new Row(y + i);
-                stoneRows.put(y+i,stoneRow);
+        public void moveRight() {
+            for (StoneCoordinate cor :
+                    stoneCoordinates) {
+                cor.goRight();
             }
         }
+
+        public void moveLeft() {
+            for (StoneCoordinate cor :
+                    stoneCoordinates) {
+                cor.goLeft();
+            }
+        }
+
+        public void moveDown(){
+            for (StoneCoordinate cor :
+                    stoneCoordinates) {
+                cor.goDown();
+            }
+        }
+
+
 
 
     }
 
-    public class Stone1 {
-
-        Row row;
-
-        public Stone1 (Character windDirection1, Character windDirection2, Character windDirection3, int y) {
-            this.row = new Row(y);
-            Map<Integer, Character> initialStartStone = new HashMap<>();
-            initialStartStone.put(3,'X');
-            initialStartStone.put(4,'X');
-            initialStartStone.put(5,'X');
-            initialStartStone.put(6,'X');
-            row.setFields(initialStartStone);
-
-        }
-
-        public void moveStoneWithWind(Character windDirection) {
-            if (windDirection == '>' && row.getFieldRow().get(7) != 'X') {
-
-            }
-        }
 
 
-
-    }
-
-
-    
 
     // layer element of field --> in array-> start with only bottom row
     // element has y number and 9 x values with 0 en 8 and x
@@ -148,11 +226,22 @@ public class Day17 implements Day<Integer> {
     // if not, it increase the field with the needed height --> sets the fields
     // next stone is going down.
 
-    
-    
+
     @Override
     public Integer part1(List<String> input) {
-        
+
+        HashMap<Integer,Row> field = new HashMap<>();
+
+        field.put(0,new Row(0));
+        field.get(0).constructStartRow();
+
+        //todo steen aanmaken en drie keer laten vallen
+
+        for (Map.Entry<Integer, Row> entry :
+                field.entrySet()) {
+            entry.getValue().printRow();
+        }
+
         return null;
     }
 
