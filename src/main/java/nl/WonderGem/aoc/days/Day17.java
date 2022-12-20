@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import nl.WonderGem.aoc.common.Day;
 
+import java.math.BigInteger;
+import java.sql.SQLOutput;
 import java.util.*;
 
 
@@ -22,33 +24,33 @@ public class Day17 implements Day<Integer> {
         public Row(int y) {
             this.y = y;
             this.fieldRow = new ArrayList<>();
-                fieldRow.add('X');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('.');
-                fieldRow.add('X');
+            fieldRow.add('X');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('.');
+            fieldRow.add('X');
 
 
         }
 
-        public void constructStartRow(){
+        public void constructStartRow() {
             for (int i = 0; i < fieldRow.size(); i++) {
 
-                if(fieldRow.get(i) != 'X') {
+                if (fieldRow.get(i) != 'X') {
                     fieldRow.set(i, 'X');
                 }
 
             }
         }
 
-        public void setFields(List<StoneCoordinate>coordinates) {
+        public void setFields(List<StoneCoordinate> coordinates) {
             for (StoneCoordinate cor :
                     coordinates) {
-                if(cor.getY() == y) {
+                if (cor.getY() == y) {
                     fieldRow.set(cor.getX(), 'X');
                 }
 
@@ -56,14 +58,14 @@ public class Day17 implements Day<Integer> {
         }
 
         public boolean checkFieldRight(StoneCoordinate cor) {
-            if(fieldRow.get(cor.getX()+1) != 'X') {
+            if (fieldRow.get(cor.getX() + 1) != 'X') {
                 return true;
             } else
                 return false;
         }
 
         public boolean checkFieldLeft(StoneCoordinate cor) {
-            if(fieldRow.get(cor.getX()-1) != 'X') {
+            if (fieldRow.get(cor.getX() - 1) != 'X') {
                 return true;
             } else {
                 return false;
@@ -71,9 +73,9 @@ public class Day17 implements Day<Integer> {
         }
 
         public boolean checkFieldBelow(StoneCoordinate cor) {
-            if(fieldRow.get(cor.getX()) != 'X' && cor.getY() - 1 == y) {
+            if (fieldRow.get(cor.getX()) != 'X' && cor.getY() - 1 == y) {
                 return true;
-            } else if(!(cor.getY() - 1 == y)){
+            } else if (!(cor.getY() - 1 == y)) {
                 System.out.print("the wrong row is checked");
                 return false;
             } else {
@@ -133,17 +135,41 @@ public class Day17 implements Day<Integer> {
             x++;
         }
 
-        public void goLeft(){
+        public void goLeft() {
             x--;
         }
 
-        public void goDown(){
+        public void goDown() {
             y--;
+        }
+
+        public boolean isTheWallToTheRight() {
+            if (x == 7) {
+                return true;
+            } else if (x >= 0 && x < 7) {
+                return false;
+            } else {
+                System.out.println("Something wrong with check before entering field");
+                return false;
+            }
+        }
+
+        public boolean isTheWallToTheLeft() {
+            if (x == 1) {
+                return true;
+            } else if (x > 1 && x <= 7) {
+                return false;
+            } else {
+                System.out.println("Something wrong with check before entering field");
+                return false;
+            }
         }
     }
 
 
     public class Stone {
+
+        @Getter
         private List<StoneCoordinate> stoneCoordinates = new ArrayList<>();
 
         public Stone(int stoneNumber, int y) {
@@ -185,6 +211,44 @@ public class Day17 implements Day<Integer> {
 
         }
 
+        public void moveStoneSidewaysBeforeEnteringField(char windDirection) {
+            boolean canMove = true;
+            for (StoneCoordinate stoneCoordinate :
+                    stoneCoordinates) {
+
+
+                if (windDirection == '>') {
+                    if (stoneCoordinate.isTheWallToTheRight()) {
+                        canMove = false;
+                        break;
+                    }
+
+
+                } else if (windDirection == '<') {
+                    if (stoneCoordinate.isTheWallToTheLeft()) {
+                        canMove = false;
+                        break;
+                    }
+
+                } else {
+                    System.out.println("windDirection is failing");
+                }
+            }
+
+            if (canMove) {
+
+                if (windDirection == '>') {
+                    moveRight();
+
+
+                } else if (windDirection == '<') {
+                    moveLeft();
+                }
+
+            }
+        }
+
+
         public void moveRight() {
             for (StoneCoordinate cor :
                     stoneCoordinates) {
@@ -199,19 +263,32 @@ public class Day17 implements Day<Integer> {
             }
         }
 
-        public void moveDown(){
+        public void moveDown() {
             for (StoneCoordinate cor :
                     stoneCoordinates) {
                 cor.goDown();
             }
         }
 
+        public void printStone() {
 
+            HashMap<Integer, Row> field = new HashMap<>();
+            field.put(4, new Row(4));
+            field.put(3, new Row(3));
+            field.put(2, new Row(2));
+            field.put(1, new Row(1));
+
+            for (Map.Entry<Integer, Row> entry : field.entrySet()) {
+                entry.getValue().setFields(stoneCoordinates);
+                entry.getValue().printRow();
+
+            }
+
+
+        }
 
 
     }
-
-
 
 
     // layer element of field --> in array-> start with only bottom row
@@ -226,23 +303,137 @@ public class Day17 implements Day<Integer> {
     // if not, it increase the field with the needed height --> sets the fields
     // next stone is going down.
 
+    public boolean canStoneMove(Stone fallingStone, HashMap<Integer, Row> field, char direction) {
+        List<StoneCoordinate> fallingStoneCoordinates = fallingStone.getStoneCoordinates();
+        for (StoneCoordinate stoneCoordinate :
+                fallingStoneCoordinates) {
+
+
+            switch (direction) {
+                case 'd':
+                    if (field.size() - stoneCoordinate.getY() >= 0) { //otherwise it will checkFields that do not exist
+                        if (!field.get(stoneCoordinate.getY() - 1).checkFieldBelow(stoneCoordinate)) {
+                            return false;
+                        }
+                    }
+                    break;
+                case '>':
+                    if(stoneCoordinate.isTheWallToTheRight()){
+                        return false;
+                    }
+                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
+                        if (!field.get(stoneCoordinate.getY()).checkFieldRight(stoneCoordinate)) {
+                            return false;
+                        }
+                    }
+                    break;
+                case '<':
+                    if(stoneCoordinate.isTheWallToTheLeft()){
+                        return false;
+                    }
+                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
+                        if (!field.get(stoneCoordinate.getY()).checkFieldLeft(stoneCoordinate)) {
+                            return false;
+                        }
+                    }
+                    break;
+            }
+
+        }
+        return true;
+
+    }
+
 
     @Override
     public Integer part1(List<String> input) {
 
-        HashMap<Integer,Row> field = new HashMap<>();
+        HashMap<Integer, Row> field = new HashMap<>();
 
-        field.put(0,new Row(0));
+        field.put(0, new Row(0));
         field.get(0).constructStartRow();
 
-        //todo steen aanmaken en drie keer laten vallen
 
-        for (Map.Entry<Integer, Row> entry :
-                field.entrySet()) {
-            entry.getValue().printRow();
+        Queue<Character> windDirections = windDirectionGenerator(input.get(0));
+        Queue<Integer> stoneNumbers = new LinkedList<>();
+
+        for (int i = 1; i < 6; i++) {
+            stoneNumbers.add(i);
         }
 
-        return null;
+        BigInteger value = new BigInteger(String.valueOf(1000000000000L));
+        BigInteger one = new BigInteger(String.valueOf(1));
+
+
+
+        for (BigInteger i = new BigInteger(String.valueOf(0)); i.compareTo(value)>-1; i.add(one)) {
+
+            //getting first stone out queue
+            int stoneNumber = stoneNumbers.remove();
+            stoneNumbers.add(stoneNumber);
+
+            int startRowStone = field.size();
+
+            Stone fallingStone = new Stone(stoneNumber, startRowStone);
+
+            for (int j = 0; j < 4; j++) {
+                char windDirection = windDirections.remove();
+                windDirections.add(windDirection);
+                fallingStone.moveStoneSidewaysBeforeEnteringField(windDirection);
+
+            }
+
+            boolean canStoneMove = true;
+
+            do {
+
+                canStoneMove = canStoneMove(fallingStone, field, 'd');
+
+                if (canStoneMove) {
+                    fallingStone.moveDown();
+
+
+                    char windDirection = windDirections.remove();
+                    windDirections.add(windDirection);
+                    boolean canStoneMoveHorizontal = canStoneMove(fallingStone, field, windDirection);
+
+                    if (canStoneMoveHorizontal && windDirection == '>') {
+                        fallingStone.moveRight();
+                    } else if (canStoneMoveHorizontal && windDirection == '<') {
+                        fallingStone.moveLeft();
+                    }
+
+                }
+
+
+            } while (canStoneMove);
+
+            for (StoneCoordinate stoneCoordinate :
+                    fallingStone.getStoneCoordinates()) {
+                if (!field.containsKey(stoneCoordinate.getY())) {
+                    field.put(stoneCoordinate.getY(), new Row(stoneCoordinate.getY()));
+                }
+                field.get(stoneCoordinate.getY()).setFields(fallingStone.getStoneCoordinates());
+            }
+
+//            System.out.println(i);
+//
+//            for (int k = field.size()-1; k >= 0; k--) {
+//                field.get(k).printRow();
+//            }
+//
+//            System.out.println();
+
+
+
+
+
+        }
+
+
+
+
+        return field.size() -1 ;
     }
 
     @Override
