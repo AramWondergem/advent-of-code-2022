@@ -446,9 +446,9 @@ public class Day17 implements Day<Integer> {
     }
 
 
-    public List<Row> findStartOfEqualPart(Map<Integer, Row> field, int sizeOfComparePart, int startPosition) {
+    public List<List<Row>> findStartOfEqualPart(Map<Integer, Row> field, int sizeOfComparePart, int startPosition) {
 
-        List<Row> equalPartList = new ArrayList<>();
+        List<List<Row>> equalPartList = new ArrayList<>();
         boolean rowIsTheSame = true;
         boolean equalPart = true;
         boolean equalPartNotFound = true;
@@ -484,22 +484,13 @@ public class Day17 implements Day<Integer> {
             }
 
             if (equalPart) {
-                for (int i = 0; i < firstPart.size(); i++) {
-                    System.out.println("");
-                    firstPart.get(i).printRow();
-                    System.out.print("  ");
-                    comparePart.get(i).printRow();
-                    System.out.print("  " + firstPart.get(i).getY() + ":" + comparePart.get(i).getY());
-
-
-                }
-                System.out.println("");
                 equalPartNotFound = false;
-                equalPartList = firstPart;
+                equalPartList.add(firstPart);
+                equalPartList.add(comparePart);
             }
 
             if (comparePart.get(0).getY() > field.size() - 100) {
-                System.out.println("no equal part is found");
+                System.out.println("no equal part is found" + firstPart.get(0).getY());
                 break;
             }
 
@@ -509,26 +500,23 @@ public class Day17 implements Day<Integer> {
 
     }
 
-    public void checkOfWholeFieldHasPattern(Map<Integer, Row> field, List<Row> firstPart) {
+    public boolean checkOfWholeFieldHasPattern(Map<Integer, Row> field, List<Row> firstPart, int lengthPattern) {
 
 
         boolean rowIsTheSame = true;
-        boolean equalPart = true;
-        boolean equalPartNotFound = true;
-        int counter = 0;
-        int startPosition = firstPart.get(firstPart.size() - 1).getY() + 1;
+        int startPosition = firstPart.get(0).getY();
         // get compare part of field
 
-        while (equalPartNotFound) {
+        for (int k = 0; k < 5; k++) {
+
+            startPosition = startPosition + lengthPattern;
 
 
             List<Row> comparePart = new ArrayList<>();
 
 
-            equalPart = true;
 
-
-            for (int i = startPosition + counter; i < (firstPart.size() + startPosition + counter); i++) {
+            for (int i = startPosition; i < (firstPart.size() + startPosition); i++) {
 
 
                 comparePart.add(field.get(i));
@@ -543,31 +531,13 @@ public class Day17 implements Day<Integer> {
             }
 
             if (!rowIsTheSame) {
-                equalPart = false;
-                counter++;
+                return false;
             }
 
-            if (equalPart) {
-
-
-                System.out.print(firstPart.get(0).getY() + ":" + comparePart.get(0).getY());
-
-
-                System.out.println("");
-
-                counter++;
-
-
-            }
-
-            if (comparePart.get(0).getY() > field.size() - 100) {
-                equalPartNotFound = false;
-                break;
-            }
 
         }
 
-
+ return true;
     }
 
 
@@ -586,15 +556,18 @@ public class Day17 implements Day<Integer> {
 
     public BigInteger part3(List<String> input) {
 
-        fillingFieldWithStones(input.get(0), 200, false);
+        // to find a pattern the field should be tall enough. To be sure, I multiplied the lenght of the wind pattern with 25.
+
+        int numberOfStones = input.get(0).length() * 25;
 
 
-        Map<Integer, Row> field = fillingFieldWithStones(input.get(0), 100000, false);
 
-        List<Row> pattern = new ArrayList<>();
+        Map<Integer, Row> field = fillingFieldWithStones(input.get(0), numberOfStones, false);
+
+        List<List<Row>> pattern = new ArrayList<>();
 
 // find pattern
-        for (int j = 1; j < 200; j++) {
+        for (int j = 1; j > 0; j++) {
 
 
             pattern = findStartOfEqualPart(field, 20, j);
@@ -608,22 +581,33 @@ public class Day17 implements Day<Integer> {
 
         // check pattern in whole field
 
-//        checkOfWholeFieldHasPattern(field, pattern);
+        int lenghtPattern = pattern.get(1).get(0).getY() - pattern.get(0).get(0).getY();
+
+        if(checkOfWholeFieldHasPattern(field, pattern.get(0),lenghtPattern)){
+            System.out.println("The field has a pattern");
+
+            for (int i = 1; i < numberOfStones; i++) {
+
+                Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
+
+                // added plus one below, because the pattern has no below border, so it is one row smaller
+
+                if (fields.size() == pattern.get(0).get(0).getY() && pattern.get(0).get(0).isRowTheSame(field.get(field.size()-1).getFieldRow())) { // testen of dit klopt
+
+                System.out.println(i);
+                    break;
+
+                }
+
+            }
+        } else {
+            System.out.println("The field does not have a pattern");
+        }
+
 
         // check how many stone are the first part
 
-        for (int i = 1; i < 100; i++) {
 
-            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
-
-            if (fields.size() == 26) {
-
-                System.out.println(i);
-                break;
-
-            }
-
-        }
 
         // check how many stone is the pattern
 
@@ -633,7 +617,7 @@ public class Day17 implements Day<Integer> {
 
             if (fields.size() == 79) {
 
-                System.out.println(i);
+//                System.out.println(i);
                 break;
 
             }
