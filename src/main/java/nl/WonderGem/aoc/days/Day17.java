@@ -37,6 +37,18 @@ public class Day17 implements Day<Integer> {
 
         }
 
+        public boolean isRowTheSame(List<Character> fieldRow2) {
+            boolean rowsAreTheSame = true;
+            for (int i = 0; i < fieldRow.size(); i++) {
+
+                if (fieldRow.get(i) != fieldRow2.get(i)) {
+                    rowsAreTheSame = false;
+                    break;
+                }
+            }
+            return rowsAreTheSame;
+        }
+
         public void constructStartRow() {
             for (int i = 0; i < fieldRow.size(); i++) {
 
@@ -88,7 +100,7 @@ public class Day17 implements Day<Integer> {
                     fieldRow) {
                 System.out.print(x);
             }
-            System.out.println();
+
         }
     }
 
@@ -318,7 +330,7 @@ public class Day17 implements Day<Integer> {
                     }
                     break;
                 case '>':
-                    if(stoneCoordinate.isTheWallToTheRight()){
+                    if (stoneCoordinate.isTheWallToTheRight()) {
                         return false;
                     }
                     if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
@@ -328,7 +340,7 @@ public class Day17 implements Day<Integer> {
                     }
                     break;
                 case '<':
-                    if(stoneCoordinate.isTheWallToTheLeft()){
+                    if (stoneCoordinate.isTheWallToTheLeft()) {
                         return false;
                     }
                     if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
@@ -344,29 +356,22 @@ public class Day17 implements Day<Integer> {
 
     }
 
-
-    @Override
-    public Integer part1(List<String> input) {
-
+    public Map<Integer, Row> fillingFieldWithStones(String windInput, int numberOfStones) {
         HashMap<Integer, Row> field = new HashMap<>();
 
         field.put(0, new Row(0));
         field.get(0).constructStartRow();
 
 
-        Queue<Character> windDirections = windDirectionGenerator(input.get(0));
+        Queue<Character> windDirections = windDirectionGenerator(windInput);
         Queue<Integer> stoneNumbers = new LinkedList<>();
 
         for (int i = 1; i < 6; i++) {
             stoneNumbers.add(i);
         }
 
-        BigInteger value = new BigInteger(String.valueOf(1000000000000L));
-        BigInteger one = new BigInteger(String.valueOf(1));
 
-
-
-        for (BigInteger i = new BigInteger(String.valueOf(0)); i.compareTo(value)>-1; i.add(one)) {
+        for (int i = 0; i < numberOfStones; i++) {
 
             //getting first stone out queue
             int stoneNumber = stoneNumbers.remove();
@@ -414,30 +419,249 @@ public class Day17 implements Day<Integer> {
                     field.put(stoneCoordinate.getY(), new Row(stoneCoordinate.getY()));
                 }
                 field.get(stoneCoordinate.getY()).setFields(fallingStone.getStoneCoordinates());
+
+
             }
 
 //            System.out.println(i);
 //
 //            for (int k = field.size()-1; k >= 0; k--) {
+//
 //                field.get(k).printRow();
+//
 //            }
 //
 //            System.out.println();
 
 
+        }
+
+        return field;
+    }
+
+    public List<Row> findStartOfEqualPart(Map<Integer, Row> field, int sizeOfComparePart, int startPosition) {
+
+        List<Row> equalPartList = new ArrayList<>();
+        boolean rowIsTheSame = true;
+        boolean equalPart = true;
+        boolean equalPartNotFound = true;
+        int counter = 0;
+        // get compare part of field
+
+        while (equalPartNotFound) {
 
 
+            List<Row> firstPart = new ArrayList<>();
+            List<Row> comparePart = new ArrayList<>();
+
+
+            equalPart = true;
+
+            for (int i = startPosition; i <= (sizeOfComparePart + startPosition - 1); i++) {
+
+                firstPart.add(field.get(i));
+                comparePart.add(field.get(i + sizeOfComparePart + counter));
+
+            }
+
+            for (int i = 0; i < firstPart.size(); i++) {
+                rowIsTheSame = firstPart.get(i).isRowTheSame(comparePart.get(i).getFieldRow());
+                if (!rowIsTheSame) {
+                    break;
+                }
+            }
+
+            if (!rowIsTheSame) {
+                equalPart = false;
+                counter++;
+            }
+
+            if (equalPart) {
+                for (int i = 0; i < firstPart.size(); i++) {
+                    System.out.println("");
+                    firstPart.get(i).printRow();
+                    System.out.print("  ");
+                    comparePart.get(i).printRow();
+                    System.out.print("  " + firstPart.get(i).getY() + ":" + comparePart.get(i).getY());
+
+
+                }
+                System.out.println("");
+                equalPartNotFound = false;
+                equalPartList = firstPart;
+            }
+
+            if (comparePart.get(0).getY() > field.size() - 100) {
+                System.out.println("no equal part is found");
+                break;
+            }
+
+        }
+
+        return equalPartList;
+
+    }
+
+    public void checkOfWholeFieldHasPattern(Map<Integer, Row> field, List<Row> firstPart) {
+
+
+        boolean rowIsTheSame = true;
+        boolean equalPart = true;
+        boolean equalPartNotFound = true;
+        int counter = 0;
+        int startPosition = firstPart.get(firstPart.size() - 1).getY() +1;
+        // get compare part of field
+
+        while (equalPartNotFound) {
+
+
+            List<Row> comparePart = new ArrayList<>();
+
+
+            equalPart = true;
+
+
+            for (int i = startPosition + counter; i < (firstPart.size() + startPosition + counter); i++) {
+
+
+                comparePart.add(field.get(i));
+
+            }
+
+            for (int i = 0; i < firstPart.size(); i++) {
+                rowIsTheSame = firstPart.get(i).isRowTheSame(comparePart.get(i).getFieldRow());
+                if (!rowIsTheSame) {
+                    break;
+                }
+            }
+
+            if (!rowIsTheSame) {
+                equalPart = false;
+                counter++;
+            }
+
+            if (equalPart) {
+
+
+                System.out.print(firstPart.get(0).getY() + ":" + comparePart.get(0).getY());
+
+
+                System.out.println("");
+
+                counter++;
+
+
+            }
+
+            if (comparePart.get(0).getY() > field.size() - 100) {
+                equalPartNotFound = false;
+                break;
+            }
 
         }
 
 
 
+    }
 
-        return field.size() -1 ;
+
+    @Override
+    public Integer part1(List<String> input) {
+
+        return fillingFieldWithStones(input.get(0), 50).size() - 1;
     }
 
     @Override
     public Integer part2(List<String> input) {
+
+
         return null;
+    }
+
+    public BigInteger part3(List<String> input) {
+
+
+// todo opnieuw schrijven code voor vergelijken
+
+
+        Map<Integer, Row> field = fillingFieldWithStones(input.get(0), 100000);
+
+        List<Row> pattern = new ArrayList<>();
+
+// find pattern
+        for (int j = 1; j < 200; j++) {
+
+
+            pattern = findStartOfEqualPart(field, 20, j);
+
+            if (pattern.size() > 0) {
+
+                break;
+            }
+
+        }
+
+        // check pattern in whole field
+
+//        checkOfWholeFieldHasPattern(field, pattern);
+
+        // check how many stone are the first part
+
+        for (int i = 1; i < 100; i++) {
+
+            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0),i);
+
+            if(fields.size()==26){
+
+                System.out.println(i);
+                break;
+
+            }
+
+        }
+
+        // check how many stone is the pattern
+
+        for (int i = 1; i < 100; i++) {
+
+            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0),i);
+
+            if(fields.size()==79){
+
+                System.out.println(i);
+                break;
+
+            }
+
+        }
+
+
+
+        // divide the 1.000.000.000.000 minus first part by number of stones in pattern
+
+        BigInteger total = new BigInteger("1000000000000");
+
+       BigInteger dividedPart =  total.subtract(BigInteger.valueOf(15));
+
+       BigInteger[] divideAndRemainderResults = dividedPart.divideAndRemainder(BigInteger.valueOf(33));
+
+        System.out.println(divideAndRemainderResults[0]);
+        System.out.println(divideAndRemainderResults[1]);
+
+
+
+
+
+        // simulate the last part with first part with it
+        Map<Integer, Row> startAndEndField = fillingFieldWithStones(input.get(0),34);
+
+        // size = 24 + times the pattern + size last part
+
+        BigInteger sizeofPatternPart = divideAndRemainderResults[0].multiply(BigInteger.valueOf(50));
+
+        BigInteger sizeOfTower = BigInteger.valueOf(startAndEndField.size()).add(sizeofPatternPart);
+
+
+        return sizeOfTower;
     }
 }
