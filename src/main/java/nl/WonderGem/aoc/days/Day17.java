@@ -100,6 +100,8 @@ public class Day17 implements Day<Integer> {
                     fieldRow) {
                 System.out.print(x);
             }
+            System.out.print(y);
+            System.out.println();
 
         }
     }
@@ -356,7 +358,7 @@ public class Day17 implements Day<Integer> {
 
     }
 
-    public Map<Integer, Row> fillingFieldWithStones(String windInput, int numberOfStones) {
+    public Map<Integer, Row> fillingFieldWithStones(String windInput, int numberOfStones, boolean print) {
         HashMap<Integer, Row> field = new HashMap<>();
 
         field.put(0, new Row(0));
@@ -423,21 +425,26 @@ public class Day17 implements Day<Integer> {
 
             }
 
-//            System.out.println(i);
-//
-//            for (int k = field.size()-1; k >= 0; k--) {
-//
-//                field.get(k).printRow();
-//
-//            }
-//
-//            System.out.println();
+            if (print) {
+
+                System.out.println(i +1);
+
+                for (int k = field.size() - 1; k >= 0; k--) {
+
+                    field.get(k).printRow();
+
+                }
+
+                System.out.println();
+
+            }
 
 
         }
 
         return field;
     }
+
 
     public List<Row> findStartOfEqualPart(Map<Integer, Row> field, int sizeOfComparePart, int startPosition) {
 
@@ -509,7 +516,7 @@ public class Day17 implements Day<Integer> {
         boolean equalPart = true;
         boolean equalPartNotFound = true;
         int counter = 0;
-        int startPosition = firstPart.get(firstPart.size() - 1).getY() +1;
+        int startPosition = firstPart.get(firstPart.size() - 1).getY() + 1;
         // get compare part of field
 
         while (equalPartNotFound) {
@@ -561,14 +568,13 @@ public class Day17 implements Day<Integer> {
         }
 
 
-
     }
 
 
     @Override
     public Integer part1(List<String> input) {
 
-        return fillingFieldWithStones(input.get(0), 50).size() - 1;
+        return fillingFieldWithStones(input.get(0), 50, false).size() - 1;
     }
 
     @Override
@@ -580,11 +586,10 @@ public class Day17 implements Day<Integer> {
 
     public BigInteger part3(List<String> input) {
 
+        fillingFieldWithStones(input.get(0), 200, false);
 
-// todo opnieuw schrijven code voor vergelijken
 
-
-        Map<Integer, Row> field = fillingFieldWithStones(input.get(0), 100000);
+        Map<Integer, Row> field = fillingFieldWithStones(input.get(0), 100000, false);
 
         List<Row> pattern = new ArrayList<>();
 
@@ -609,9 +614,9 @@ public class Day17 implements Day<Integer> {
 
         for (int i = 1; i < 100; i++) {
 
-            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0),i);
+            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
 
-            if(fields.size()==26){
+            if (fields.size() == 26) {
 
                 System.out.println(i);
                 break;
@@ -624,9 +629,9 @@ public class Day17 implements Day<Integer> {
 
         for (int i = 1; i < 100; i++) {
 
-            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0),i);
+            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
 
-            if(fields.size()==79){
+            if (fields.size() == 79) {
 
                 System.out.println(i);
                 break;
@@ -636,30 +641,26 @@ public class Day17 implements Day<Integer> {
         }
 
 
-
         // divide the 1.000.000.000.000 minus first part by number of stones in pattern
 
         BigInteger total = new BigInteger("1000000000000");
 
-       BigInteger dividedPart =  total.subtract(BigInteger.valueOf(15));
+        BigInteger dividedPart = total.subtract(BigInteger.valueOf(15));
 
-       BigInteger[] divideAndRemainderResults = dividedPart.divideAndRemainder(BigInteger.valueOf(33));
+        BigInteger[] divideAndRemainderResults = dividedPart.divideAndRemainder(BigInteger.valueOf(35));
 
         System.out.println(divideAndRemainderResults[0]);
         System.out.println(divideAndRemainderResults[1]);
 
 
-
-
-
         // simulate the last part with first part with it
-        Map<Integer, Row> startAndEndField = fillingFieldWithStones(input.get(0),34);
+        Map<Integer, Row> startAndEndField = fillingFieldWithStones(input.get(0), 15, false);
 
-        // size = 24 + times the pattern + size last part
+        // size = 28 + times the pattern + size last part
 
-        BigInteger sizeofPatternPart = divideAndRemainderResults[0].multiply(BigInteger.valueOf(50));
+        BigInteger sizeofPatternPart = divideAndRemainderResults[0].multiply(BigInteger.valueOf(53));
 
-        BigInteger sizeOfTower = BigInteger.valueOf(startAndEndField.size()).add(sizeofPatternPart);
+        BigInteger sizeOfTower = BigInteger.valueOf(startAndEndField.size()-1).add(sizeofPatternPart);
 
 
         return sizeOfTower;
