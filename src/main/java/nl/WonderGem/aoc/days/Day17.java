@@ -427,12 +427,15 @@ public class Day17 implements Day<Integer> {
 
             if (print) {
 
-                System.out.println(i +1);
+                System.out.println(i + 1);
 
-                for (int k = field.size() - 1; k >= 0; k--) {
+                if (field.size() > 35) {
 
-                    field.get(k).printRow();
+                    for (int k = field.size() - 1; k >= field.size() - 30; k--) {
 
+                        field.get(k).printRow();
+
+                    }
                 }
 
                 System.out.println();
@@ -515,7 +518,6 @@ public class Day17 implements Day<Integer> {
             List<Row> comparePart = new ArrayList<>();
 
 
-
             for (int i = startPosition; i < (firstPart.size() + startPosition); i++) {
 
 
@@ -537,7 +539,7 @@ public class Day17 implements Day<Integer> {
 
         }
 
- return true;
+        return true;
     }
 
 
@@ -559,8 +561,9 @@ public class Day17 implements Day<Integer> {
         // to find a pattern the field should be tall enough. To be sure, I multiplied the lenght of the wind pattern with 25.
 
         int numberOfStones = input.get(0).length() * 25;
-
-
+        int numberOfStonesFirstPart = 0;
+        int numberOfStonesAfterOnePattern = 0;
+        int numberOfStonePerPattern = 0;
 
         Map<Integer, Row> field = fillingFieldWithStones(input.get(0), numberOfStones, false);
 
@@ -570,7 +573,7 @@ public class Day17 implements Day<Integer> {
         for (int j = 1; j > 0; j++) {
 
 
-            pattern = findStartOfEqualPart(field, 20, j);
+            pattern = findStartOfEqualPart(field, 11, j);
 
             if (pattern.size() > 0) {
 
@@ -581,25 +584,76 @@ public class Day17 implements Day<Integer> {
 
         // check pattern in whole field
 
-        int lenghtPattern = pattern.get(1).get(0).getY() - pattern.get(0).get(0).getY();
+        List<Row> basicPattern = pattern.get(0);
+        List<Row> nextPattern = pattern.get(1);
 
-        if(checkOfWholeFieldHasPattern(field, pattern.get(0),lenghtPattern)){
-            System.out.println("The field has a pattern");
+        System.out.println(nextPattern.get(0).getY() + " " + basicPattern.get(0).getY());
+
+        int lenghtPattern = nextPattern.get(0).getY() - basicPattern.get(0).getY();
+
+
+        if (checkOfWholeFieldHasPattern(field, basicPattern, lenghtPattern)) {
+            System.out.println("The field has a pattern" + lenghtPattern);
+
+
+
+            boolean firstGoStart = true;
+            boolean firstGoEnd = true;
 
             for (int i = 1; i < numberOfStones; i++) {
 
-                Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
+
+                Map<Integer, Row> sizeOfFieldTestField = fillingFieldWithStones(input.get(0), i, false);
 
                 // added plus one below, because the pattern has no below border, so it is one row smaller
 
-                if (fields.size() == pattern.get(0).get(0).getY() && pattern.get(0).get(0).isRowTheSame(field.get(field.size()-1).getFieldRow())) { // testen of dit klopt
 
-                System.out.println(i);
-                    break;
-
+                if (firstGoStart) {
+                    if (sizeOfFieldTestField.size() - 1 == basicPattern.get(0).getY()) {
+                        numberOfStonesFirstPart = i;
+                        firstGoStart = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(1).getY()) {
+                        numberOfStonesFirstPart = i;
+                        firstGoStart = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(2).getY()) {
+                        numberOfStonesFirstPart = i;
+                        firstGoStart = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(3).getY()) {
+                        numberOfStonesFirstPart = i;
+                        firstGoStart = false;
+                    }
                 }
 
+                if (firstGoEnd) {
+                    if (sizeOfFieldTestField.size() - 1 == basicPattern.get(0).getY() + lenghtPattern) {
+                        numberOfStonesAfterOnePattern = i;
+                        firstGoEnd = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(1).getY() + lenghtPattern) {
+                        numberOfStonesAfterOnePattern = i;
+                        firstGoEnd = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(2).getY() + lenghtPattern) {
+                        numberOfStonesAfterOnePattern = i;
+                        firstGoEnd = false;
+                    } else if (sizeOfFieldTestField.size() - 1 == basicPattern.get(3).getY() + lenghtPattern) {
+                        numberOfStonesAfterOnePattern = i;
+                        firstGoEnd = false;
+                    }
+                }
+
+                if (!firstGoStart && !firstGoEnd) {
+                    break;
+                }
+
+
             }
+
+
+            System.out.println(numberOfStonesFirstPart);
+            System.out.println(numberOfStonesAfterOnePattern);
+            numberOfStonePerPattern = numberOfStonesAfterOnePattern - numberOfStonesFirstPart;
+            System.out.println(numberOfStonePerPattern);
+
+
         } else {
             System.out.println("The field does not have a pattern");
         }
@@ -608,43 +662,33 @@ public class Day17 implements Day<Integer> {
         // check how many stone are the first part
 
 
-
         // check how many stone is the pattern
-
-        for (int i = 1; i < 100; i++) {
-
-            Map<Integer, Row> fields = fillingFieldWithStones(input.get(0), i, false);
-
-            if (fields.size() == 79) {
-
-//                System.out.println(i);
-                break;
-
-            }
-
-        }
 
 
         // divide the 1.000.000.000.000 minus first part by number of stones in pattern
 
         BigInteger total = new BigInteger("1000000000000");
 
-        BigInteger dividedPart = total.subtract(BigInteger.valueOf(15));
+        BigInteger dividedPart = total.subtract(BigInteger.valueOf(numberOfStonesFirstPart));
 
-        BigInteger[] divideAndRemainderResults = dividedPart.divideAndRemainder(BigInteger.valueOf(35));
+        BigInteger[] divideAndRemainderResults = dividedPart.divideAndRemainder(BigInteger.valueOf(numberOfStonePerPattern));
 
         System.out.println(divideAndRemainderResults[0]);
         System.out.println(divideAndRemainderResults[1]);
 
+        int remainder = Integer.parseInt(divideAndRemainderResults[1].toString());
+
+        int numberOfStonesFirstPartAndRemainder = numberOfStonesFirstPart + remainder;
+
 
         // simulate the last part with first part with it
-        Map<Integer, Row> startAndEndField = fillingFieldWithStones(input.get(0), 15, false);
+        Map<Integer, Row> startAndEndField = fillingFieldWithStones(input.get(0), numberOfStonesFirstPartAndRemainder, false);
 
         // size = 28 + times the pattern + size last part
 
-        BigInteger sizeofPatternPart = divideAndRemainderResults[0].multiply(BigInteger.valueOf(53));
+        BigInteger sizeofPatternPart = divideAndRemainderResults[0].multiply(BigInteger.valueOf(lenghtPattern));
 
-        BigInteger sizeOfTower = BigInteger.valueOf(startAndEndField.size()-1).add(sizeofPatternPart);
+        BigInteger sizeOfTower = BigInteger.valueOf(startAndEndField.size() - 1).add(sizeofPatternPart);
 
 
         return sizeOfTower;
