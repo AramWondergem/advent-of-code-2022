@@ -70,18 +70,11 @@ public class Day17 implements Day<Integer> {
         }
 
         public boolean checkFieldRight(StoneCoordinate cor) {
-            if (fieldRow.get(cor.getX() + 1) != 'X') {
-                return true;
-            } else
-                return false;
+            return fieldRow.get(cor.getX() + 1) != 'X';
         }
 
         public boolean checkFieldLeft(StoneCoordinate cor) {
-            if (fieldRow.get(cor.getX() - 1) != 'X') {
-                return true;
-            } else {
-                return false;
-            }
+            return fieldRow.get(cor.getX() - 1) != 'X';
         }
 
         public boolean checkFieldBelow(StoneCoordinate cor) {
@@ -156,6 +149,8 @@ public class Day17 implements Day<Integer> {
         public void goDown() {
             y--;
         }
+
+        // The two functions below is to check if the wall is to the right or left falling the first three steps.
 
         public boolean isTheWallToTheRight() {
             if (x == 7) {
@@ -325,27 +320,27 @@ public class Day17 implements Day<Integer> {
 
             switch (direction) {
                 case 'd':
-                    if (field.size() - stoneCoordinate.getY() >= 0) { //otherwise it will checkFields that do not exist
+                    if (field.size() - stoneCoordinate.getY() >= 0) { //otherwise it will check fields that do not exist, because only the part of the stone in the field and one layer above the field should be checked if the coordinates below are free. If other forms of stones get into the list, this should be reconsidered.
                         if (!field.get(stoneCoordinate.getY() - 1).checkFieldBelow(stoneCoordinate)) {
                             return false;
                         }
                     }
                     break;
                 case '>':
-                    if (stoneCoordinate.isTheWallToTheRight()) {
+                    if (stoneCoordinate.isTheWallToTheRight()) { // if the star stone is one stone deep into the field and this is not checked, it will move into the "wall"
                         return false;
                     }
-                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
+                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist. it can only check the stones in the field.
                         if (!field.get(stoneCoordinate.getY()).checkFieldRight(stoneCoordinate)) {
                             return false;
                         }
                     }
                     break;
                 case '<':
-                    if (stoneCoordinate.isTheWallToTheLeft()) {
+                    if (stoneCoordinate.isTheWallToTheLeft()) {// if the star stone is one stone deep into the field and this is not checked, it will move into the "wall"
                         return false;
                     }
-                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist
+                    if (field.size() - stoneCoordinate.getY() > 0) { //otherwise it will checkFields that do not exist. it can only check the stones in the field.
                         if (!field.get(stoneCoordinate.getY()).checkFieldLeft(stoneCoordinate)) {
                             return false;
                         }
@@ -361,10 +356,12 @@ public class Day17 implements Day<Integer> {
     public Map<Integer, Row> fillingFieldWithStones(String windInput, int numberOfStones, boolean print) {
         HashMap<Integer, Row> field = new HashMap<>();
 
+        // construct the first row
+
         field.put(0, new Row(0));
         field.get(0).constructStartRow();
 
-
+// wind directions and stone pattern are loaded in a queue
         Queue<Character> windDirections = windDirectionGenerator(windInput);
         Queue<Integer> stoneNumbers = new LinkedList<>();
 
@@ -372,7 +369,7 @@ public class Day17 implements Day<Integer> {
             stoneNumbers.add(i);
         }
 
-
+// One go of the loop will add a stone to the tower of stones
         for (int i = 0; i < numberOfStones; i++) {
 
             //getting first stone out queue
@@ -381,8 +378,10 @@ public class Day17 implements Day<Integer> {
 
             int startRowStone = field.size();
 
+            // the stone is created and the startRowStone indicates the start coordinates of the stone.
             Stone fallingStone = new Stone(stoneNumber, startRowStone);
 
+            // first three steps down. It will not have to take into account the tower of stones, because it always starts three steps above the tower of stones
             for (int j = 0; j < 4; j++) {
                 char windDirection = windDirections.remove();
                 windDirections.add(windDirection);
@@ -391,6 +390,8 @@ public class Day17 implements Day<Integer> {
             }
 
             boolean canStoneMove = true;
+
+            // In this loop, it will first check if the stone can move down. If so, it will check the move directed by the wind. If the stone can not move down. The coordinates of the stone will be added to the field.
 
             do {
 
@@ -425,6 +426,8 @@ public class Day17 implements Day<Integer> {
 
             }
 
+            // option to visualize the tower of stones
+
             if (print) {
 
                 System.out.println(i + 1);
@@ -456,7 +459,7 @@ public class Day17 implements Day<Integer> {
         boolean equalPart = true;
         boolean equalPartNotFound = true;
         int counter = 0;
-        // get compare part of field
+
 
         while (equalPartNotFound) {
 
@@ -467,12 +470,16 @@ public class Day17 implements Day<Integer> {
 
             equalPart = true;
 
+            // loop to fill the List with parts which should be compared
+
             for (int i = startPosition; i <= (sizeOfComparePart + startPosition - 1); i++) {
 
-                firstPart.add(field.get(i));
-                comparePart.add(field.get(i + sizeOfComparePart + counter));
+                firstPart.add(field.get(i)); // takes the first part of the tower
+                comparePart.add(field.get(i + sizeOfComparePart + counter)); // takes the next part which should be compared with the first part
 
             }
+
+            // loop to check if the rows are the same. If not it will break out of the loop.
 
             for (int i = 0; i < firstPart.size(); i++) {
                 rowIsTheSame = firstPart.get(i).isRowTheSame(comparePart.get(i).getFieldRow());
@@ -492,6 +499,8 @@ public class Day17 implements Day<Integer> {
                 equalPartList.add(comparePart);
             }
 
+            // if statement to catch the null pointer exception
+
             if (comparePart.get(0).getY() > field.size() - 100) {
                 System.out.println("no equal part is found" + firstPart.get(0).getY());
                 break;
@@ -505,12 +514,14 @@ public class Day17 implements Day<Integer> {
 
     public boolean checkOfWholeFieldHasPattern(Map<Integer, Row> field, List<Row> firstPart, int lengthPattern) {
 
-
+        // function the check if the patterns goes on in the tower. I assumed that the pattern will not change after occurring five times.
         boolean rowIsTheSame = true;
         int startPosition = firstPart.get(0).getY();
-        // get compare part of field
+
 
         for (int k = 0; k < 5; k++) {
+
+            // startposition to get the part of the tower which should be the same as the first part
 
             startPosition = startPosition + lengthPattern;
 
@@ -524,6 +535,8 @@ public class Day17 implements Day<Integer> {
                 comparePart.add(field.get(i));
 
             }
+
+            // comparing the two parts of the tower
 
             for (int i = 0; i < firstPart.size(); i++) {
                 rowIsTheSame = firstPart.get(i).isRowTheSame(comparePart.get(i).getFieldRow());
@@ -546,7 +559,7 @@ public class Day17 implements Day<Integer> {
     @Override
     public Integer part1(List<String> input) {
 
-        return fillingFieldWithStones(input.get(0), 50, false).size() - 1;
+        return fillingFieldWithStones(input.get(0), 2022, false).size() - 1;
     }
 
     @Override
@@ -569,44 +582,44 @@ public class Day17 implements Day<Integer> {
 
         List<List<Row>> pattern = new ArrayList<>();
 
-// find pattern
+// loop to find a pattern. There is a change that the pattern does not start at the beginning of the tower, so j increases until a pattern is found.
         for (int j = 1; j > 0; j++) {
 
 
             pattern = findStartOfEqualPart(field, 11, j);
 
-            if (pattern.size() > 0) {
+            if (pattern.size() > 0) { // the function returns the pattern occuring in two places of the tower. If the list is not empty, than there is a pattern found.
 
                 break;
             }
 
         }
 
-        // check pattern in whole field
+
 
         List<Row> basicPattern = pattern.get(0);
         List<Row> nextPattern = pattern.get(1);
 
-        System.out.println(nextPattern.get(0).getY() + " " + basicPattern.get(0).getY());
 
         int lenghtPattern = nextPattern.get(0).getY() - basicPattern.get(0).getY();
 
 
-        if (checkOfWholeFieldHasPattern(field, basicPattern, lenghtPattern)) {
+        if (checkOfWholeFieldHasPattern(field, basicPattern, lenghtPattern)) { // check pattern in whole field
             System.out.println("The field has a pattern" + lenghtPattern);
-
 
 
             boolean firstGoStart = true;
             boolean firstGoEnd = true;
+
+            // loop which add one stone more each loop and then checks the height of the tower with the y coordinates of the first four rows of the first occurrences and second occurrences of the pattern. It check the first four because it can be that the pattern does not exactly start with a stone. In order words, the start of the pattern can be half a stone.
 
             for (int i = 1; i < numberOfStones; i++) {
 
 
                 Map<Integer, Row> sizeOfFieldTestField = fillingFieldWithStones(input.get(0), i, false);
 
-                // added plus one below, because the pattern has no below border, so it is one row smaller
 
+// checks how many stones fall before the pattern occurs
 
                 if (firstGoStart) {
                     if (sizeOfFieldTestField.size() - 1 == basicPattern.get(0).getY()) {
@@ -623,6 +636,8 @@ public class Day17 implements Day<Integer> {
                         firstGoStart = false;
                     }
                 }
+
+                // check how many stones fall at the end of the first occurrences of the pattern
 
                 if (firstGoEnd) {
                     if (sizeOfFieldTestField.size() - 1 == basicPattern.get(0).getY() + lenghtPattern) {
@@ -659,13 +674,13 @@ public class Day17 implements Day<Integer> {
         }
 
 
-        // check how many stone are the first part
 
 
-        // check how many stone is the pattern
 
 
-        // divide the 1.000.000.000.000 minus first part by number of stones in pattern
+
+
+        // The following formula is used o find out how many times the pattern occurs. occurrences of pattern = (100.000.000.000 - (numberOfStonesFirstPart)) / numberOfStonesInPattern.
 
         BigInteger total = new BigInteger("1000000000000");
 
@@ -677,6 +692,8 @@ public class Day17 implements Day<Integer> {
         System.out.println(divideAndRemainderResults[1]);
 
         int remainder = Integer.parseInt(divideAndRemainderResults[1].toString());
+
+        // The remainder of the division is added to the number of stones of the first part. The heigt of the tower after simulation will be added to the height of the pattern part of the tower.
 
         int numberOfStonesFirstPartAndRemainder = numberOfStonesFirstPart + remainder;
 
