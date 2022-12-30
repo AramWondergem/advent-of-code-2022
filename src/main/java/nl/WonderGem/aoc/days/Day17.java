@@ -616,7 +616,7 @@ public class Day17 implements Day<Integer> {
             for (int i = 1; i < numberOfStones; i++) {
 
 
-                Map<Integer, Row> sizeOfFieldTestField = fillingFieldWithStones(input.get(0), i, false);
+                Map<Integer, Row> sizeOfFieldTestField = fillingFieldWithStones(input.get(0), i, true);
 
 
 // checks how many stones fall before the pattern occurs
